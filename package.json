@@ -9,6 +9,10 @@
   ],
   "main": "./dist/counter.umd.cjs",
   "module": "./dist/counter.js",
+  "homepage": "https://github.com/komeilm76/km-storage",
+  "repository": {
+    "url": "https://github.com/komeilm76/km-storage"
+  },
   "types": "./index.d.ts",
   "exports": {
     "types": "./index.d.ts",
@@ -25,6 +29,7 @@
     "vite": "^5.2.10"
   },
   "dependencies": {
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "zod": "^3.23.8"
   }
 }
