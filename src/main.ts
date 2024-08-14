@@ -1,5 +1,3 @@
 import service from "./service";
 
-export default {
-  storage: service.storage,
-};
+export default service.storage;
