@@ -1,9 +1,7 @@
 import _ from "lodash";
 import {
   AnyZodObject,
-  boolean,
   z,
-  ZodAny,
   ZodBoolean,
   ZodNaN,
   ZodNull,
@@ -156,7 +154,7 @@ const storage = <SCHEMA extends AnyZodObject, NAME extends string>(schema: SCHEM
 
   const useAll = <
     STORAGE extends z.infer<SCHEMA> = z.infer<SCHEMA>,
-    KEY extends keyof STORAGE = keyof STORAGE
+    // KEY extends keyof STORAGE = keyof STORAGE
   >() => {
     let output: Partial<STORAGE> = {};
     for (const _key in schema.shape) {
