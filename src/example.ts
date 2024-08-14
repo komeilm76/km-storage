@@ -15,7 +15,7 @@ let testSchema = z.object({
 
 const example = () => {
   // instance service
-  let storage = service.storage(testSchema, "main");
+  let storage = service.storage.install(testSchema, "main");
 
   // create example
   storage.create("secretCode", 123);

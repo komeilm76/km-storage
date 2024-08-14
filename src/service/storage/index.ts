@@ -38,7 +38,6 @@ const isJson = (value: any) => {
 };
 
 const transformToRealType = <SCHEMA extends ZodType>(schema: SCHEMA, value: any) => {
-
   if (schema instanceof ZodNumber) {
     return _.toNumber(value);
   } else if (schema instanceof ZodNull) {
@@ -62,7 +61,7 @@ const transformToRealType = <SCHEMA extends ZodType>(schema: SCHEMA, value: any)
   }
 };
 
-const storage = <SCHEMA extends AnyZodObject, NAME extends string>(schema: SCHEMA, name: NAME) => {
+const install = <SCHEMA extends AnyZodObject, NAME extends string>(schema: SCHEMA, name: NAME) => {
   const prefix: NAME = name;
   const spliter = ":" as const;
   const recordId = `${prefix}${spliter}` as const;
@@ -153,7 +152,7 @@ const storage = <SCHEMA extends AnyZodObject, NAME extends string>(schema: SCHEM
   };
 
   const useAll = <
-    STORAGE extends z.infer<SCHEMA> = z.infer<SCHEMA>,
+    STORAGE extends z.infer<SCHEMA> = z.infer<SCHEMA>
     // KEY extends keyof STORAGE = keyof STORAGE
   >() => {
     let output: Partial<STORAGE> = {};
@@ -179,4 +178,6 @@ const storage = <SCHEMA extends AnyZodObject, NAME extends string>(schema: SCHEM
   };
 };
 
-export default storage;
+export default {
+  install,
+};

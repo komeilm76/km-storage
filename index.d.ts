@@ -1,3 +1,3 @@
 import service from "./src/main";
-type Service = typeof service;
-export default Service;
+declare let kmStorage: typeof service.storage;
+export default kmStorage;
