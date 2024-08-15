@@ -41,6 +41,8 @@ const isJson = (value: any) => {
 const transformToRealType = <SCHEMA extends ZodType>(schema: SCHEMA, value: any) => {
   if (schema instanceof ZodNumber) {
     return _.toNumber(value);
+  } else if (schema instanceof ZodUndefined) {
+    return undefined;
   } else if (schema instanceof ZodNull) {
     return null;
   } else if (schema instanceof ZodNaN) {
