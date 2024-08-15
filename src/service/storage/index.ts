@@ -10,6 +10,7 @@ import {
   ZodOptional,
   ZodString,
   ZodType,
+  ZodUndefined,
 } from "zod";
 
 type IInputValue = string | Object | boolean | number;
@@ -114,7 +115,6 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(schema: SCHEM
   ) => {
     let name = getRecordNameById<STORAGE>(recordId);
     let value = localStorage.getItem(recordId);
-    console.log("value", value);
 
     if (isJson(value as IInputValue)) {
       if (value !== null) {
@@ -132,14 +132,35 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(schema: SCHEM
     }
   };
 
+  const validEntry = <STORAGE extends z.infer<SCHEMA>, KEY extends keyof STORAGE = keyof STORAGE>(
+    name: KEY,
+    value: STORAGE[KEY]
+  ) => {
+    name;
+    value;
+    let keys = Object.keys(schema.shape) as KEY[];
+    if (keys.includes(name)) {
+      let keySchema = schema.shape[name] as ZodType;
+      let parsedValue = keySchema.safeParse(value);
+      if (parsedValue.success == false) {
+        throw parsedValue.error.issues;
+      } else {
+        return true;
+      }
+    } else {
+      throw `Your Entry | name:'${name as string}' | is not Valid. Please Use Valid Name Or Update Schema`;
+    }
+  };
   const create = <STORAGE extends z.infer<SCHEMA>, KEY extends keyof STORAGE = keyof STORAGE>(
     name: KEY,
     value: STORAGE[KEY]
   ) => {
-    let makedValue = make(value);
-
-    let recordId = getRecordIdByName<STORAGE>(name);
-    localStorage.setItem(recordId as string, makedValue);
+    let isValid = validEntry(name, value);
+    if (isValid) {
+      let recordId = getRecordIdByName<STORAGE>(name);
+      let makedValue = make(value);
+      localStorage.setItem(recordId as string, makedValue);
+    }
   };
 
   const use = <STORAGE extends z.infer<SCHEMA> = z.infer<SCHEMA>, KEY extends keyof STORAGE = keyof STORAGE>(
