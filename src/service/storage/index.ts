@@ -64,8 +64,11 @@ const transformToRealType = <SCHEMA extends ZodType>(schema: SCHEMA, value: any)
   }
 };
 
-const install = <SCHEMA extends AnyZodObject, NAME extends string>(schema: SCHEMA, name: NAME) => {
-  const prefix: NAME = name;
+const install = <SCHEMA extends AnyZodObject, NAME extends string>(
+  schema: SCHEMA,
+  options: { prefix: NAME } = { prefix: "km" as NAME }
+) => {
+  const prefix: NAME = options.prefix;
   const spliter = ":" as const;
   const recordId = `${prefix}${spliter}` as const;
 

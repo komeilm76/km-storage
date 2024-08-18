@@ -1,15 +1,19 @@
 {
   "name": "km-storage",
   "private": false,
-  "version": "0.1.7",
+  "version": "0.1.8",
+  "author": {
+    "name": "Komeil Mohammadian",
+    "email": "komeilmohammadian1376.web@gmail.com"
+  },
   "type": "module",
   "files": [
-    "lib",
+    "dist",
     "types",
     "index.d.ts"
   ],
-  "main": "./lib/main.umd.cjs",
-  "module": "./lib/main.js",
+  "main": "./dist/main.umd.cjs",
+  "module": "./dist/main.js",
   "homepage": "https://github.com/komeilm76/km-storage",
   "repository": {
     "url": "https://github.com/komeilm76/km-storage"
@@ -17,12 +21,13 @@
   "types": "./types/main.d.ts",
   "exports": {
     "types": "./types/main.d.ts",
-    "import": "./lib/main.js",
-    "require": "./lib/main.umd.cjs"
+    "import": "./dist/main.js",
+    "require": "./dist/main.umd.cjs"
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && npm run types",
+    "build": "tsc && vite build",
+    "build-ts": "tsc",
     "types": "npx -p typescript tsc src/main.ts --declaration --allowJs --emitDeclarationOnly --outDir types"
   },
   "devDependencies": {

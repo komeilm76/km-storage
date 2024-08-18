@@ -8,6 +8,6 @@ export default defineConfig({
       fileName: "main",
       formats: ["cjs", "umd", "es"],
     },
-    outDir: "./lib",
+    outDir: "./dist",
   },
 });

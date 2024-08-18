@@ -25,7 +25,7 @@ let schema = z.object({
     email: z.string().email(),
   }),
 });
-let localDB = storage.install(schema, "db");
+let localDB = storage.install(schema, { prefix: "db" });
 
 // unions examples
 // ----------------------------
@@ -52,6 +52,7 @@ localStorage.getItem("db:isDark"); // return "{ ... }" ( type is string )
 ## dependensies
 
 Required Dependensies is [ZOD](https://zod.dev/)
+
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
