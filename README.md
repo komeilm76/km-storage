@@ -25,7 +25,7 @@ let schema = z.object({
     email: z.string().email(),
   }),
 });
-let localDB = storage.install(schema, { prefix: "db" });
+let localDB = storage.install(schema, { prefix: "db", mode: "sessionStorage" });
 
 // unions examples
 // ----------------------------

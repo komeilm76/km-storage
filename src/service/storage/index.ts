@@ -64,11 +64,22 @@ const transformToRealType = <SCHEMA extends ZodType>(schema: SCHEMA, value: any)
   }
 };
 
+type IOptions<NAME> = {
+  prefix: NAME;
+  mode: "localStorage" | "sessionStorage";
+};
+
 const install = <SCHEMA extends AnyZodObject, NAME extends string>(
   schema: SCHEMA,
-  options: { prefix: NAME } = { prefix: "km" as NAME }
+  options: Partial<IOptions<NAME>>
 ) => {
-  const prefix: NAME = options.prefix;
+  const defaultOptions: IOptions<NAME> = {
+    mode: "localStorage",
+    prefix: "km" as NAME,
+    ...options,
+  };
+  let defaultStorage = defaultOptions.mode == "localStorage" ? localStorage : sessionStorage;
+  const prefix: NAME = defaultOptions.prefix;
   const spliter = ":" as const;
   const recordId = `${prefix}${spliter}` as const;
 
@@ -119,7 +130,7 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(
     recordId: RECORDID
   ) => {
     let name = getRecordNameById<STORAGE>(recordId);
-    let value = localStorage.getItem(recordId);
+    let value = defaultStorage.getItem(recordId);
 
     if (isJson(value as IInputValue)) {
       if (value !== null) {
@@ -164,7 +175,7 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(
     if (isValid) {
       let recordId = getRecordIdByName<STORAGE>(name);
       let makedValue = make(value);
-      localStorage.setItem(recordId as string, makedValue);
+      defaultStorage.setItem(recordId as string, makedValue);
     }
   };
 
@@ -193,7 +204,7 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(
 
   const remove = <STORAGE extends z.infer<SCHEMA>, KEY extends keyof STORAGE>(name: KEY) => {
     let recordId = getRecordIdByName<STORAGE>(name);
-    localStorage.removeItem(recordId as string);
+    defaultStorage.removeItem(recordId as string);
   };
 
   return {

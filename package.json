@@ -1,7 +1,7 @@
 {
   "name": "km-storage",
   "private": false,
-  "version": "0.1.8",
+  "version": "0.1.9",
   "author": {
     "name": "Komeil Mohammadian",
     "email": "komeilmohammadian1376.web@gmail.com"
@@ -38,5 +38,12 @@
   "dependencies": {
     "lodash": "^4.17.21",
     "zod": "^3.23.8"
-  }
+  },
+  "keywords": [
+    "typescript",
+    "localStorage",
+    "sessionStorage",
+    "zod",
+    "schema"
+  ]
 }
