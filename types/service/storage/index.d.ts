@@ -9,6 +9,7 @@ declare const _default: {
         use: <STORAGE extends z.infer<SCHEMA> = z.TypeOf<SCHEMA>, KEY_1 extends keyof STORAGE = keyof STORAGE>(name: KEY_1) => STORAGE[KEY_1] | undefined;
         useAll: <STORAGE extends z.infer<SCHEMA> = z.TypeOf<SCHEMA>>() => Partial<STORAGE>;
         remove: <STORAGE extends z.infer<SCHEMA>, KEY_2 extends keyof STORAGE>(name: KEY_2) => void;
+        removeAll: <STORAGE extends z.infer<SCHEMA>, KEY_3 extends keyof STORAGE>() => void;
     };
 };
 export default _default;
