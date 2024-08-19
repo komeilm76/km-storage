@@ -43,6 +43,7 @@
     "npm-auto-commit": "^1.4.0",
     "zod": "^3.23.8"
   },
+  "license": "MIT",
   "keywords": [
     "typescript",
     "localStorage",
