@@ -89,8 +89,7 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
-lib
+
 
 # Gatsby files
 .cache/
@@ -129,3 +128,9 @@ lib
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+
+# custom
+/dist
+/lib
+package-lock.json

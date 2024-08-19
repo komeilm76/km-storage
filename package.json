@@ -28,10 +28,11 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build-ts": "tsc",
-    "types": "npx -p typescript tsc src/main.ts --declaration --allowJs --emitDeclarationOnly --outDir types"
+    "build-js": "vite build"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.7",
+    "release-it": "^17.6.0",
     "typescript": "^5.4.5",
     "vite": "^5.2.10"
   },
