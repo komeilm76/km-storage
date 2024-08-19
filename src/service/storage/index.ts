@@ -223,6 +223,7 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(
     remove,
     removeAll,
   };
+  
 };
 
 export default {
