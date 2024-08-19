@@ -29,8 +29,7 @@
     "build": "tsc && vite build",
     "build-ts": "tsc",
     "types": "npx -p typescript tsc src/main.ts --declaration --allowJs --emitDeclarationOnly --outDir types",
-    "prepublish": "npx auto-version --patch && git status && git add . && git commit -m 'publish new release'",
-    "auto-commit": "npx npm-auto-commit -a"
+    "make-release": "npm run build && npx release-it"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.7",
