@@ -207,11 +207,21 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(
     defaultStorage.removeItem(recordId as string);
   };
 
+  const removeAll = <STORAGE extends z.infer<SCHEMA>, KEY extends keyof STORAGE>() => {
+    for (const _key in schema.shape) {
+      if (Object.prototype.hasOwnProperty.call(schema.shape, _key)) {
+        const key = _key as KEY;
+        remove(key);
+      }
+    }
+  };
+
   return {
     create,
     use,
     useAll,
     remove,
+    removeAll,
   };
 };
 
