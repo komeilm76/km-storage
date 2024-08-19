@@ -15,7 +15,7 @@ let testSchema = z.object({
 
 const example = () => {
   // instance service
-  let storage = service.storage.install(testSchema, { mode: "sessionStorage", prefix: "km" });
+  let storage = service.storage.install(testSchema, { mode: "sessionStorage", prefix: "kms" });
 
   // create example
   storage.create("secretCode", 123);
@@ -57,6 +57,11 @@ const example = () => {
   console.log("user", user);
   let userByNative = localStorage.getItem("main:user");
   console.log("userByNative", userByNative);
+
+  // remove All
+  setTimeout(() => {
+    storage.removeAll();
+  }, 2000);
 };
 
 export default example;

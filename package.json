@@ -1,7 +1,7 @@
 {
   "name": "km-storage",
   "private": false,
-  "version": "0.1.10",
+  "version": "0.1.0",
   "author": {
     "name": "Komeil Mohammadian",
     "email": "komeilmohammadian1376.web@gmail.com"
@@ -28,7 +28,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build-ts": "tsc",
-    "types": "npx -p typescript tsc src/main.ts --declaration --allowJs --emitDeclarationOnly --outDir types"
+    "types": "npx -p typescript tsc src/main.ts --declaration --allowJs --emitDeclarationOnly --outDir types",
+    "prepublish": "npx auto-version --patch && git status && git add . && git commit -m 'publish new release'",
+    "auto-commit": "npx npm-auto-commit -a"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.7",
@@ -36,7 +38,9 @@
     "vite": "^5.2.10"
   },
   "dependencies": {
+    "auto-version-js": "^0.3.10",
     "lodash": "^4.17.21",
+    "npm-auto-commit": "^1.4.0",
     "zod": "^3.23.8"
   },
   "keywords": [
