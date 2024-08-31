@@ -1,4 +1,4 @@
-declare const _default: {
+declare const kmStorage: {
     install: <SCHEMA extends import("zod").AnyZodObject, NAME extends string>(schema: SCHEMA, options: Partial<{
         prefix: NAME;
         mode: "localStorage" | "sessionStorage";
@@ -10,4 +10,4 @@ declare const _default: {
         removeAll: <STORAGE extends import("zod").TypeOf<SCHEMA>, KEY_3 extends keyof STORAGE>() => void;
     };
 };
-export default _default;
+export default kmStorage;

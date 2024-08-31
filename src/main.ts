@@ -1,2 +1,3 @@
 import service from "./service";
-export default service.storage;
+const kmStorage = service.storage;
+export default kmStorage;
