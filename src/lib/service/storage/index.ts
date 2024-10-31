@@ -1,8 +1,9 @@
-import _ from "lodash";
+import _ from 'lodash';
 import {
   AnyZodObject,
   z,
   ZodBoolean,
+  ZodDefault,
   ZodNaN,
   ZodNull,
   ZodNullable,
@@ -11,7 +12,7 @@ import {
   ZodString,
   ZodType,
   ZodUndefined,
-} from "zod";
+} from 'zod';
 
 type IInputValue = string | Object | boolean | number;
 
@@ -21,7 +22,7 @@ const isObject = (value: IInputValue) => {
 
 const isJson = (value: any) => {
   let output: boolean = false;
-  if (typeof value == "string") {
+  if (typeof value == 'string') {
     try {
       let parsed = JSON.parse(value);
       if (isObject(parsed)) {
@@ -39,34 +40,40 @@ const isJson = (value: any) => {
 };
 
 const transformToRealType = <SCHEMA extends ZodType>(schema: SCHEMA, value: any) => {
+  let output = value;
   if (schema instanceof ZodNumber) {
-    return _.toNumber(value);
+    output = _.toNumber(output);
   } else if (schema instanceof ZodUndefined) {
-    return undefined;
+    output = undefined;
   } else if (schema instanceof ZodNull) {
-    return null;
+    output = null;
   } else if (schema instanceof ZodNaN) {
-    return NaN;
+    output = NaN;
   } else if (schema instanceof ZodString) {
-    return _.toString(value);
+    output = _.toString(value);
   } else if (schema instanceof ZodBoolean) {
-    if (value == "false") {
-      return false;
+    if (value == 'false') {
+      output = false;
     } else {
-      return true;
+      output = true;
     }
   } else if (schema instanceof ZodNullable) {
-    return transformToRealType(schema._def.innerType, value);
+    output = transformToRealType(schema._def.innerType, value);
   } else if (schema instanceof ZodOptional) {
-    return transformToRealType(schema._def.innerType, value);
+    output = transformToRealType(schema._def.innerType, value);
+  } else if (schema instanceof ZodDefault) {
+    output = transformToRealType(schema._def.innerType, value);
   } else {
-    return value;
+    output = value;
   }
+
+  return output;
 };
 
 type IOptions<NAME> = {
   prefix: NAME;
-  mode: "localStorage" | "sessionStorage";
+  mode: 'localStorage' | 'sessionStorage';
+  editManualy: boolean;
 };
 
 const install = <SCHEMA extends AnyZodObject, NAME extends string>(
@@ -74,14 +81,17 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(
   options: Partial<IOptions<NAME>>
 ) => {
   const defaultOptions: IOptions<NAME> = {
-    mode: "localStorage",
-    prefix: "km" as NAME,
+    mode: 'localStorage',
+    prefix: 'km' as NAME,
+    editManualy: true,
     ...options,
   };
-  let defaultStorage = defaultOptions.mode == "localStorage" ? localStorage : sessionStorage;
+  let defaultStorage = defaultOptions.mode == 'localStorage' ? localStorage : sessionStorage;
   const prefix: NAME = defaultOptions.prefix;
-  const spliter = ":" as const;
+  const spliter = ':' as const;
   const recordId = `${prefix}${spliter}` as const;
+
+  let state: 'manualy' | 'systematic' | 'none' = 'none';
 
   const getRecordIdByName = <
     STORAGE extends z.infer<SCHEMA> = z.infer<SCHEMA>,
@@ -102,11 +112,14 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(
     _recordId: `${typeof recordId}${KEY}`
   ) => {
     // @ts-ignore
-    let output = _recordId.replace(recordId, "") as KEY;
+    let output = _recordId.replace(recordId, '') as KEY;
     return output;
   };
 
-  const make = <STORAGE extends z.infer<SCHEMA> = z.infer<SCHEMA>, KEY extends keyof STORAGE = keyof STORAGE>(
+  const make = <
+    STORAGE extends z.infer<SCHEMA> = z.infer<SCHEMA>,
+    KEY extends keyof STORAGE = keyof STORAGE
+  >(
     value: STORAGE[KEY]
   ) => {
     let outputValue: STORAGE[KEY];
@@ -164,7 +177,9 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(
         return true;
       }
     } else {
-      throw `Your Entry | name:'${name as string}' | is not Valid. Please Use Valid Name Or Update Schema`;
+      throw `Your Entry | name:'${
+        name as string
+      }' | is not Valid. Please Use Valid Name Or Update Schema`;
     }
   };
   const create = <STORAGE extends z.infer<SCHEMA>, KEY extends keyof STORAGE = keyof STORAGE>(
@@ -173,13 +188,20 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(
   ) => {
     let isValid = validEntry(name, value);
     if (isValid) {
+      state = 'systematic';
       let recordId = getRecordIdByName<STORAGE>(name);
       let makedValue = make(value);
       defaultStorage.setItem(recordId as string, makedValue);
     }
+    setTimeout(() => {
+      state = 'none';
+    }, 10);
   };
 
-  const use = <STORAGE extends z.infer<SCHEMA> = z.infer<SCHEMA>, KEY extends keyof STORAGE = keyof STORAGE>(
+  const use = <
+    STORAGE extends z.infer<SCHEMA> = z.infer<SCHEMA>,
+    KEY extends keyof STORAGE = keyof STORAGE
+  >(
     name: KEY
   ) => {
     let recordId = getRecordIdByName<STORAGE>(name);
@@ -216,6 +238,36 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(
     }
   };
 
+  const stopChangeManualy = <
+    STORAGE extends z.infer<SCHEMA> = z.infer<SCHEMA>,
+    KEY extends keyof STORAGE = keyof STORAGE
+  >() => {
+    window.addEventListener(
+      'storage',
+      ($e: StorageEvent) => {
+        console.log('$e', $e, state);
+        if (state == 'systematic') {
+        } else if (state == 'none') {
+          state = 'manualy';
+          // @ts-ignore
+          let key = $e.key as `${typeof recordId}${KEY}`;
+          let name = getRecordNameById(key);
+          if (schema.shape[name]) {
+            let value = $e.oldValue as STORAGE[KEY];
+            localStorage.setItem(key, value);
+          }
+          setTimeout(() => {
+            state = 'none';
+          }, 10);
+        }
+      },
+      false
+    );
+  };
+  if (options.editManualy == false) {
+    stopChangeManualy();
+  }
+
   return {
     create,
     use,
@@ -223,9 +275,16 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(
     remove,
     removeAll,
   };
-  
 };
 
 export default {
   install,
 };
+
+// type IStorageEvent<KEY, VALUE> = {
+//   key: KEY;
+//   newValue: VALUE;
+//   oldValue: VALUE;
+// } & {
+//   [key: string]: any;
+// };
