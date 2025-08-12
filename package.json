@@ -37,6 +37,7 @@
     "@types/node": "^22.5.5",
     "cross-env": "^7.0.3",
     "lodash": "^4.17.21",
+    "zipson": "^0.2.12",
     "zod": "^3.23.8"
   },
   "devDependencies": {

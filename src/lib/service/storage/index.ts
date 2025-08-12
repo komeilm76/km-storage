@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { parse, stringify } from 'zipson/lib';
 import {
   AnyZodObject,
   z,
@@ -74,6 +75,7 @@ type IOptions<NAME> = {
   prefix: NAME;
   mode: 'localStorage' | 'sessionStorage';
   editManualy: boolean;
+  compress: boolean;
 };
 
 const install = <SCHEMA extends AnyZodObject, NAME extends string>(
@@ -84,6 +86,7 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(
     mode: 'localStorage',
     prefix: 'km' as NAME,
     editManualy: true,
+    compress: false,
     ...options,
   };
   let defaultStorage = defaultOptions.mode == 'localStorage' ? localStorage : sessionStorage;
@@ -126,7 +129,9 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(
     let isObjectValue = isObject(value as IInputValue);
 
     if (isObjectValue) {
-      outputValue = JSON.stringify(value) as STORAGE[KEY];
+      outputValue = options.compress
+        ? (stringify(value) as STORAGE[KEY])
+        : (JSON.stringify(value) as STORAGE[KEY]);
     } else {
       outputValue = value as STORAGE[KEY];
     }
@@ -147,7 +152,9 @@ const install = <SCHEMA extends AnyZodObject, NAME extends string>(
 
     if (isJson(value as IInputValue)) {
       if (value !== null) {
-        return JSON.parse(value) as STORAGE[KEY];
+        return options.compress
+          ? (parse(value) as STORAGE[KEY])
+          : (JSON.parse(value) as STORAGE[KEY]);
       } else {
         return undefined;
       }
