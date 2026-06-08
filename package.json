@@ -18,7 +18,10 @@
   "typings": "build/types/index.d.ts",
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
+      "bun": {
+        "types": "./build/types/index.d.ts",
+        "default": "./src/index.ts"
+      },
       "types": "./build/types/index.d.ts",
       "require": "./build/cjs/index.cjs",
       "import": "./build/esm/index.mjs",
@@ -62,7 +65,8 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "publish-directly": "npm publish --access public",
-    "auto-release": "bun run fix:prettier && bun run build && bun run test && release-it"
+    "ship": "release-it",
+    "auto-release": "release-it"
   },
   "dependencies": {
     "zipson": "^0.2.12",

@@ -1,5 +1,3 @@
-import type { z } from 'zod';
-
 /**
  * The storage backend to target.
  *
@@ -159,8 +157,8 @@ export type Updater<T> = T | ((current: T | undefined) => T);
  * inferred as a union of the schema's keys, and value types are inferred
  * per key — wrong keys or wrong value types are compile-time errors.
  *
- * @template SCHEMA - A `z.ZodObject` that defines the keys and value types
- *                    for this store.
+ * @template S - The plain object type inferred from the Zod schema (i.e., `z.infer<typeof schema>`).
+ *              Pass the inferred type directly — not the schema itself.
  *
  * @example
  * import { z } from 'zod';
@@ -168,9 +166,12 @@ export type Updater<T> = T | ((current: T | undefined) => T);
  * import type { StorageInstance } from 'km-storage';
  *
  * const schema = z.object({ theme: z.string(), count: z.number() });
- * const store: StorageInstance<typeof schema> = createStorage(schema, { prefix: 'app' });
+ * // Let TypeScript infer the type automatically (recommended):
+ * const store = createStorage(schema, { prefix: 'app' });
+ * // Or annotate explicitly with the inferred type:
+ * const store: StorageInstance<z.infer<typeof schema>> = createStorage(schema, { prefix: 'app' });
  */
-export type StorageInstance<SCHEMA extends z.ZodObject<any>> = {
+export type StorageInstance<S extends Record<string, unknown>> = {
   /**
    * Validate and write a value to storage. Replaces any existing entry for the same key.
    *
@@ -189,9 +190,9 @@ export type StorageInstance<SCHEMA extends z.ZodObject<any>> = {
    * store.create('age', 30, { ttl: 60_000 }); // expires in 60 s
    * store.create('age', 'oops' as any);         // throws ZodError
    */
-  create<K extends keyof z.infer<SCHEMA>>(
+  create<K extends keyof S>(
     name: K,
-    value: z.infer<SCHEMA>[K],
+    value: S[K],
     options?: CreateOptions
   ): void;
 
@@ -214,7 +215,7 @@ export type StorageInstance<SCHEMA extends z.ZodObject<any>> = {
    * store.read('age');       // → 30  (number)
    * store.read('username');  // → undefined  (never written)
    */
-  read<K extends keyof z.infer<SCHEMA>>(name: K): z.infer<SCHEMA>[K] | undefined;
+  read<K extends keyof S>(name: K): S[K] | undefined;
 
   /**
    * Update a stored entry. Accepts a **plain value** or a **functional updater**
@@ -237,9 +238,9 @@ export type StorageInstance<SCHEMA extends z.ZodObject<any>> = {
    * // Safe when key has never been written (prev is undefined)
    * store.update('count', (prev) => prev ?? 0); // → 0
    */
-  update<K extends keyof z.infer<SCHEMA>>(
+  update<K extends keyof S>(
     name: K,
-    value: Updater<z.infer<SCHEMA>[K]>,
+    value: Updater<S[K]>,
     options?: CreateOptions
   ): void;
 
@@ -257,7 +258,7 @@ export type StorageInstance<SCHEMA extends z.ZodObject<any>> = {
    *
    * store.remove('neverWritten'); // no-op, no error
    */
-  remove<K extends keyof z.infer<SCHEMA>>(name: K): void;
+  remove<K extends keyof S>(name: K): void;
 
   /**
    * Remove **all** entries that belong to this store instance (every key matching
@@ -277,7 +278,7 @@ export type StorageInstance<SCHEMA extends z.ZodObject<any>> = {
    * Read every key in the schema and return the results as a partial object.
    * Keys that were never written (or whose entries have expired) appear as `undefined`.
    *
-   * @returns A `Partial<z.infer<SCHEMA>>` containing all schema keys.
+   * @returns A `Partial<S>` containing all schema keys.
    *
    * @example
    * store.create('username', 'Alice');
@@ -285,7 +286,7 @@ export type StorageInstance<SCHEMA extends z.ZodObject<any>> = {
    * store.readAll();
    * // → { username: 'Alice', age: 30, active: undefined, score: undefined, tags: undefined }
    */
-  readAll(): Partial<z.infer<SCHEMA>>;
+  readAll(): Partial<S>;
 
   /**
    * Subscribe to value changes on a single schema key.
@@ -314,9 +315,9 @@ export type StorageInstance<SCHEMA extends z.ZodObject<any>> = {
    * unsub(); // stop watching
    * store.create('username', 'Charlie'); // nothing fires
    */
-  watch<K extends keyof z.infer<SCHEMA>>(
+  watch<K extends keyof S>(
     name: K,
-    callback: WatchCallback<z.infer<SCHEMA>[K]>
+    callback: WatchCallback<S[K]>
   ): () => void;
 
   /**

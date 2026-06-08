@@ -48,7 +48,7 @@ import type {
 export function createStorage<SCHEMA extends z.ZodObject<any>, NAME extends string = string>(
   schema: SCHEMA,
   options?: StorageOptions<NAME>
-): StorageInstance<SCHEMA> {
+): StorageInstance<z.infer<SCHEMA>> {
   type S = z.infer<SCHEMA>;
 
   /**
