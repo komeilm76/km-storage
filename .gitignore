@@ -1,11 +1,110 @@
-diff
-.idea/*
-.nyc_output
+# ============================================================
+# .gitignore — TypeScript + Bun + tsup + release-it package
+# ============================================================
+
+# ------------------------------------------------------------
+# BUILD DIRECTORIES
+# ------------------------------------------------------------
+/build/
 build
-node_modules
-test
-src/**.js
-coverage
-*.log
-yarn.lock
+/dist/
+/out/
+/.tsbuildinfo
+
+# ------------------------------------------------------------
+# DEPENDENCIES
+# ------------------------------------------------------------
+/node_modules/
+/bun.lockb
+/package-lock.json
+/yarn.lock
+/pnpm-lock.yaml
+bun.lock
 package-lock.json
+
+# ------------------------------------------------------------
+# PACKAGE MANAGEMENT
+# ------------------------------------------------------------
+*.tgz
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun-debug.log*
+
+# ------------------------------------------------------------
+# TESTS AND COVERAGE
+# ------------------------------------------------------------
+/coverage/
+/.vitest/
+
+# ------------------------------------------------------------
+# TEMPORARY & SYSTEM FILES
+# ------------------------------------------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+*.swp
+*.swo
+*.tmp
+*.temp
+*.log
+*.bak
+*.orig
+
+# ------------------------------------------------------------
+# IDE / EDITOR FILES
+# ------------------------------------------------------------
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# ------------------------------------------------------------
+# ENVIRONMENT & SECRETS
+# ------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# ------------------------------------------------------------
+# RELEASE / VERSIONING TOOLS
+# ------------------------------------------------------------
+.releases/
+.releaserc
+.release-it.json.backup
+CHANGELOG.tmp
+
+# ------------------------------------------------------------
+# DOCUMENTATION BUILD
+# ------------------------------------------------------------
+/docs/
+/doc_build/
+/typedoc/
+
+# ------------------------------------------------------------
+# MISC
+# ------------------------------------------------------------
+scratch.*
+temp/
+tmp/
+
+# ------------------------------------------------------------
+# TRACKED FILES — DO NOT IGNORE
+# ------------------------------------------------------------
+!src/
+!tsup.config.ts
+!tsconfig.json
+!tsconfig.test.json
+!vitest.config.ts
+!package.json
+!LICENSE
+!README.md
+!CHANGES.md
+!.gitignore
+!.prettierrc
+!.release-it.json
