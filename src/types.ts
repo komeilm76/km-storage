@@ -190,11 +190,7 @@ export type StorageInstance<S extends Record<string, unknown>> = {
    * store.create('age', 30, { ttl: 60_000 }); // expires in 60 s
    * store.create('age', 'oops' as any);         // throws ZodError
    */
-  create<K extends keyof S>(
-    name: K,
-    value: S[K],
-    options?: CreateOptions
-  ): void;
+  create<K extends keyof S>(name: K, value: S[K], options?: CreateOptions): void;
 
   /**
    * Read and return the current value for a schema key.
@@ -238,11 +234,7 @@ export type StorageInstance<S extends Record<string, unknown>> = {
    * // Safe when key has never been written (prev is undefined)
    * store.update('count', (prev) => prev ?? 0); // → 0
    */
-  update<K extends keyof S>(
-    name: K,
-    value: Updater<S[K]>,
-    options?: CreateOptions
-  ): void;
+  update<K extends keyof S>(name: K, value: Updater<S[K]>, options?: CreateOptions): void;
 
   /**
    * Remove a single entry from storage. Safe to call even if the key was never
@@ -315,10 +307,7 @@ export type StorageInstance<S extends Record<string, unknown>> = {
    * unsub(); // stop watching
    * store.create('username', 'Charlie'); // nothing fires
    */
-  watch<K extends keyof S>(
-    name: K,
-    callback: WatchCallback<S[K]>
-  ): () => void;
+  watch<K extends keyof S>(name: K, callback: WatchCallback<S[K]>): () => void;
 
   /**
    * Remove **all** registered watchers and detach the cross-tab `storage` event listener.
