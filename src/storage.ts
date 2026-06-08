@@ -1,7 +1,13 @@
 import type { z } from 'zod';
 import { zodCast } from './zod-cast';
 import { encodeEntry, decodeEntry } from './serialize';
-import type { StorageOptions, CreateOptions, WatchCallback, Updater, StorageInstance } from './types';
+import type {
+  StorageOptions,
+  CreateOptions,
+  WatchCallback,
+  Updater,
+  StorageInstance,
+} from './types';
 
 /**
  * Create a fully typed, schema-validated storage instance backed by either
@@ -298,9 +304,7 @@ export function createStorage<SCHEMA extends z.ZodObject<any>, NAME extends stri
   const update = <K extends keyof S>(name: K, value: Updater<S[K]>, opts?: CreateOptions): void => {
     const current = readValue(name);
     const next =
-      typeof value === 'function'
-        ? (value as (prev: S[K] | undefined) => S[K])(current)
-        : value;
+      typeof value === 'function' ? (value as (prev: S[K] | undefined) => S[K])(current) : value;
     create(name, next, opts);
   };
 
@@ -393,10 +397,7 @@ export function createStorage<SCHEMA extends z.ZodObject<any>, NAME extends stri
    * unsub(); // stop watching
    * store.create('username', 'Charlie'); // nothing fires
    */
-  const watch = <K extends keyof S>(
-    name: K,
-    callback: WatchCallback<S[K]>
-  ): (() => void) => {
+  const watch = <K extends keyof S>(name: K, callback: WatchCallback<S[K]>): (() => void) => {
     const nameStr = name as string;
     if (!watchers.has(nameStr)) {
       watchers.set(nameStr, new Set());

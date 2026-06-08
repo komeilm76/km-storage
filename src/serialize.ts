@@ -82,10 +82,7 @@ export type DecodeResult = {
  * encodeEntry(false);
  * // → '{"v":false}'  (false is preserved, not confused with "missing")
  */
-export function encodeEntry(
-  value: unknown,
-  opts?: { ttl?: number; compress?: boolean }
-): string {
+export function encodeEntry(value: unknown, opts?: { ttl?: number; compress?: boolean }): string {
   const envelope: Envelope = { v: value };
   if (opts?.ttl !== undefined && opts.ttl > 0) {
     envelope.e = Date.now() + opts.ttl;
@@ -128,17 +125,10 @@ export function encodeEntry(
  * decodeEntry('{"x":1}'); // missing 'v' key — not an envelope
  * // → null
  */
-export function decodeEntry(
-  raw: string,
-  opts?: { compress?: boolean }
-): DecodeResult | null {
+export function decodeEntry(raw: string, opts?: { compress?: boolean }): DecodeResult | null {
   try {
     const envelope: unknown = opts?.compress ? parse(raw) : JSON.parse(raw);
-    if (
-      typeof envelope !== 'object' ||
-      envelope === null ||
-      !('v' in (envelope as object))
-    ) {
+    if (typeof envelope !== 'object' || envelope === null || !('v' in (envelope as object))) {
       return null;
     }
     const e = (envelope as any).e as number | undefined;

@@ -170,10 +170,7 @@ function asJsonComplex(raw: unknown): unknown {
  * const sort = zodCast(z.enum(['asc', 'desc']), formData.get('sort'));
  * // 'asc' → 'asc'   |   'invalid' → undefined
  */
-export function zodCast<T extends z.ZodTypeAny>(
-  schema: T,
-  raw: unknown
-): z.infer<T> | undefined {
+export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infer<T> | undefined {
   const type = schemaType(schema);
 
   switch (type) {
@@ -537,7 +534,7 @@ export function zodCast<T extends z.ZodTypeAny>(
     case 'ZodDiscriminatedUnion': {
       const rawOptions = (schema as any)._def.options;
       const options: z.ZodTypeAny[] =
-        rawOptions instanceof Map ? [...rawOptions.values()] : (rawOptions ?? []);
+        rawOptions instanceof Map ? [...rawOptions.values()] : rawOptions ?? [];
       for (const option of options) {
         const r = option.safeParse(raw);
         if (r.success) return r.data as z.infer<T>;
