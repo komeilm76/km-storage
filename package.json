@@ -1,6 +1,6 @@
 {
   "name": "km-storage",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "Type-safe browser storage (localStorage / sessionStorage) with Zod schema validation and optional compression.",
   "license": "MIT",
   "author": "komeilm76",
