@@ -83,20 +83,29 @@ export function createStorage<SCHEMA extends $AnyZodObject, NAME extends string 
    */
   const compress = options?.compress ?? false;
 
+  // ── SSR / non-browser guard ───────────────────────────────────────────────
+
+  /** True when running inside a real browser with Web Storage available. */
+  const isBrowser = typeof window !== 'undefined';
+
   // ── Storage accessor ──────────────────────────────────────────────────────
 
   /**
-   * Returns the active `Storage` object (`localStorage` or `sessionStorage`)
-   * based on the configured `mode`. Called at access time so that test
-   * environments can override the global `window` object between calls.
+   * Returns the active `Storage` object (`localStorage` or `sessionStorage`),
+   * or `null` when called outside a browser (SSR, Node.js, Deno, test runners
+   * that do not provide a `window` global). Callers treat `null` as a no-op so
+   * the library is safe to import and call unconditionally in SSR frameworks
+   * such as Next.js, Nuxt, and SvelteKit.
    *
-   * @returns The `Storage` object for the current mode.
+   * @returns The `Storage` object for the current mode, or `null` in non-browser environments.
    *
    * @example
-   * getStore().setItem('key', 'value'); // writes to localStorage or sessionStorage
+   * getStore()?.setItem('key', 'value'); // writes to localStorage or sessionStorage (browser only)
    */
-  const getStore = (): Storage =>
-    mode === 'localStorage' ? window.localStorage : window.sessionStorage;
+  const getStore = (): Storage | null => {
+    if (!isBrowser) return null;
+    return mode === 'localStorage' ? window.localStorage : window.sessionStorage;
+  };
 
   // ── Key helpers ───────────────────────────────────────────────────────────
 
@@ -223,14 +232,17 @@ export function createStorage<SCHEMA extends $AnyZodObject, NAME extends string 
    * readValue('username') // → undefined (never written)
    */
   const readValue = <K extends keyof S>(name: K): S[K] | undefined => {
-    const raw = getStore().getItem(toKey(name as string));
+    const store = getStore();
+    if (!store) return undefined;
+
+    const raw = store.getItem(toKey(name as string));
     if (raw === null) return undefined;
 
     const decoded = decodeEntry(raw, { compress });
     if (!decoded) return undefined;
 
     if (decoded.expired) {
-      getStore().removeItem(toKey(name as string));
+      store.removeItem(toKey(name as string));
       return undefined;
     }
 
@@ -264,9 +276,11 @@ export function createStorage<SCHEMA extends $AnyZodObject, NAME extends string 
     const parsed = fieldSchema.safeParse(value);
     if (!parsed.success) throw parsed.error;
 
+    const store = getStore();
+    if (!store) return;
     const previous = readValue(name);
     const encoded = encodeEntry(parsed.data, { ttl: opts?.ttl, compress });
-    getStore().setItem(toKey(name as string), encoded);
+    store.setItem(toKey(name as string), encoded);
     notify(name as string, parsed.data, previous);
   };
 
@@ -336,8 +350,10 @@ export function createStorage<SCHEMA extends $AnyZodObject, NAME extends string 
    * store.remove('neverWritten'); // no-op, no error
    */
   const remove = <K extends keyof S>(name: K): void => {
+    const store = getStore();
+    if (!store) return;
     const previous = readValue(name);
-    getStore().removeItem(toKey(name as string));
+    store.removeItem(toKey(name as string));
     notify(name as string, undefined, previous);
   };
 
@@ -416,14 +432,15 @@ export function createStorage<SCHEMA extends $AnyZodObject, NAME extends string 
     const set = watchers.get(nameStr)!;
     set.add(callback as WatchCallback<unknown>);
 
-    if (watchers.size === 1) {
+    if (isBrowser && watchers.size === 1) {
       window.addEventListener('storage', handleStorageEvent);
     }
 
     return () => {
       set.delete(callback as WatchCallback<unknown>);
       if (set.size === 0) watchers.delete(nameStr);
-      if (watchers.size === 0) window.removeEventListener('storage', handleStorageEvent);
+      if (isBrowser && watchers.size === 0)
+        window.removeEventListener('storage', handleStorageEvent);
     };
   };
 
@@ -442,7 +459,7 @@ export function createStorage<SCHEMA extends $AnyZodObject, NAME extends string 
    */
   const destroy = (): void => {
     watchers.clear();
-    window.removeEventListener('storage', handleStorageEvent);
+    if (isBrowser) window.removeEventListener('storage', handleStorageEvent);
   };
 
   return { create, read, update, remove, removeAll, readAll, watch, destroy };

@@ -40,6 +40,7 @@
   - [Multiple Stores with Shared Schema](#multiple-stores-with-shared-schema)
   - [TTL Patterns](#ttl-patterns)
 - [Export Styles](#export-styles)
+- [Version Compatibility](#version-compatibility)
 - [Browser Compatibility](#browser-compatibility)
 - [FAQ](#faq)
 - [Contributing](#contributing)
@@ -935,6 +936,15 @@ const store = kmStorage.default.createStorage(schema, { prefix: 'app' });
 
 ---
 
+## Version Compatibility
+
+| km-storage | TypeScript | Zod | Node.js |
+|------------|-----------|-----|---------|
+| `0.3.x` | `4.9.x` | `^3.23` | `>=10` |
+| `1.3.x` | `~5.9` | `>=4.0.0` | `>=14` |
+
+---
+
 ## Browser Compatibility
 
 km-storage uses the standard Web Storage API (`localStorage`, `sessionStorage`) and the `storage` event — available in all evergreen browsers.
@@ -947,18 +957,7 @@ km-storage uses the standard Web Storage API (`localStorage`, `sessionStorage`) 
 | Edge | 12+ |
 | Opera | 10.5+ |
 
-> **Note:** km-storage is a **browser-only** library. `window`, `localStorage`, and `sessionStorage` do not exist in Node.js. Do not call `createStorage` in SSR (server-side rendering) contexts such as Next.js server components, Nuxt server routes, or Bun/Node scripts, without a `typeof window !== 'undefined'` guard.
-
-```typescript
-// Safe pattern for SSR
-const store =
-  typeof window !== 'undefined'
-    ? createStorage(schema, { prefix: 'app' })
-    : null;
-
-// Usage
-store?.create('username', 'Alice');
-```
+> **Note:** km-storage is **SSR-safe** as of `v1.3.5`. `createStorage` can be called unconditionally in SSR frameworks (Next.js, Nuxt, SvelteKit). All operations are no-ops on the server — reads return `undefined`, writes are silently skipped — so your app never crashes on the server and hydrates normally in the browser.
 
 ---
 

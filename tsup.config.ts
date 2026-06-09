@@ -17,7 +17,7 @@ export default defineConfig([
     clean: true,
     outDir: 'build/esm',
     target: 'esnext',
-    platform: 'browser',
+    platform: 'neutral',
     minify: true,
   },
 
@@ -33,7 +33,7 @@ export default defineConfig([
     clean: false,
     outDir: 'build/cjs',
     target: 'es2019',
-    platform: 'browser',
+    platform: 'neutral',
     minify: true,
   },
 
@@ -49,7 +49,7 @@ export default defineConfig([
     clean: false,
     outDir: 'build/js',
     target: 'es2020',
-    platform: 'browser',
+    platform: 'neutral',
     minify: true,
   },
 ]);
