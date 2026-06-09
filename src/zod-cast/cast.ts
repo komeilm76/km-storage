@@ -178,7 +178,10 @@ function asJsonComplex(raw: unknown): unknown {
  * const sort = zodCast(z.enum(['asc', 'desc']), formData.get('sort'));
  * // 'asc' → 'asc'   |   'invalid' → undefined
  */
-export function zodCast<T extends $AnyZodType>(schema: T, raw: unknown): T['_zod']['output'] | undefined {
+export function zodCast<T extends $AnyZodType>(
+  schema: T,
+  raw: unknown
+): T['_zod']['output'] | undefined {
   // Internal cast so the function body can use Zod-specific methods.
   // This cast is in the function body and does NOT appear in the emitted .d.ts.
   const _s = schema as unknown as z.ZodTypeAny;
