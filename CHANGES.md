@@ -1,5 +1,37 @@
 # Changelog
 
+## v1.3.4 — 2026-06-09
+
+### Dependencies
+
+- **`zod` promoted to `peerDependency`** — Zod is now declared under `peerDependencies` (previously `dependencies`). Consumers must install Zod themselves alongside km-storage (e.g. `npm install km-storage zod`). This ensures TypeScript resolves `'zod'` from the consumer's own `node_modules/zod/` path, which tsserver has already parsed and cached — eliminating any residual IDE latency from duplicated Zod installations in nested `node_modules`.
+
+---
+
+## v1.3.3 — 2026-06-08
+
+### Bug Fixes
+
+- **Zero Zod imports in generated declaration files** — replaced all remaining Zod type references in exported signatures with local structural types (`$AnyZodObject`, `$AnyZodType`). `grep -rn "^import.*zod" build/` now returns zero results across all `.d.ts` / `.d.mts` outputs, fully eliminating the IDE hang on import.
+
+---
+
+## v1.3.2 — 2026-06-08
+
+### Bug Fixes
+
+- **`StorageInstance` decoupled from Zod internals** — the public `StorageInstance<S>` type now takes the inferred output shape (`S extends Record<string, unknown>`) rather than the raw Zod schema, preventing tsserver from loading Zod's type system when consumers use the type annotation.
+
+---
+
+## v1.3.1 — 2026-06-08
+
+### Bug Fixes
+
+- Prettier formatting pass on `src/types.ts` and `src/zod-cast/cast.ts`.
+
+---
+
 ## v1.3.0 — 2026-06-08
 
 ### Documentation

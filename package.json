@@ -65,14 +65,16 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "publish-directly": "npm publish --access public",
-    "ship": "release-it",
-    "auto-release": "release-it"
+    "ship": "release-it"
   },
   "dependencies": {
-    "zipson": "^0.2.12",
-    "zod": "^4.4.0"
+    "zipson": "^0.2.12"
+  },
+  "peerDependencies": {
+    "zod": ">=4.0.0"
   },
   "devDependencies": {
+    "zod": "^4.4.0",
     "@types/bun": "latest",
     "@types/jsdom": "^28.0.3",
     "@types/node": "^22.5.5",

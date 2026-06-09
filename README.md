@@ -112,7 +112,7 @@ pnpm add km-storage zod
 bun add km-storage zod
 ```
 
-> **Note:** `zod` is a required peer dependency. km-storage requires **Zod 4.x** (`^4.4.0`).
+> **Note:** `zod` is a required peer dependency (`peerDependencies`). km-storage requires **Zod 4.x** (`>=4.0.0`). Both packages must be installed in your project.
 
 ---
 
@@ -209,7 +209,7 @@ admin:username  → '{"v":"superadmin"}'   ← separate store, no collision
 function createStorage<SCHEMA extends z.ZodObject<any>, NAME extends string = string>(
   schema: SCHEMA,
   options?: StorageOptions<NAME>
-): StorageInstance<SCHEMA>
+): StorageInstance<z.infer<SCHEMA>>
 ```
 
 Creates and returns a storage instance bound to the given Zod schema and options.
@@ -219,7 +219,7 @@ Creates and returns a storage instance bound to the given Zod schema and options
 | `schema` | `z.ZodObject<any>` | A Zod object schema defining the keys and types for this store |
 | `options` | `StorageOptions` | Optional configuration (see [StorageOptions](#storageoptions)) |
 
-**Returns:** a `StorageInstance<SCHEMA>` with the methods documented below.
+**Returns:** a `StorageInstance<z.infer<SCHEMA>>` with the methods documented below.
 
 ---
 
@@ -516,7 +516,7 @@ zodCast(z.string().transform((s) => s.toUpperCase()), 'hello') // → 'HELLO'
 ### zodCast — Function Signature
 
 ```typescript
-function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infer<T> | undefined
+function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): T['_zod']['output'] | undefined
 ```
 
 Returns `z.infer<T>` if the value can be coerced to the schema's type, or `undefined` if coercion fails.
@@ -723,27 +723,27 @@ type Updater<T> = T | ((current: T | undefined) => T);
 ### StorageInstance
 
 ```typescript
-type StorageInstance<SCHEMA extends z.ZodObject<any>> = {
-  create<K extends keyof z.infer<SCHEMA>>(
-    name: K,
-    value: z.infer<SCHEMA>[K],
-    options?: CreateOptions
-  ): void;
-  read<K extends keyof z.infer<SCHEMA>>(name: K): z.infer<SCHEMA>[K] | undefined;
-  update<K extends keyof z.infer<SCHEMA>>(
-    name: K,
-    value: Updater<z.infer<SCHEMA>[K]>,
-    options?: CreateOptions
-  ): void;
-  remove<K extends keyof z.infer<SCHEMA>>(name: K): void;
+type StorageInstance<S extends Record<string, unknown>> = {
+  create<K extends keyof S>(name: K, value: S[K], options?: CreateOptions): void;
+  read<K extends keyof S>(name: K): S[K] | undefined;
+  update<K extends keyof S>(name: K, value: Updater<S[K]>, options?: CreateOptions): void;
+  remove<K extends keyof S>(name: K): void;
   removeAll(): void;
-  readAll(): Partial<z.infer<SCHEMA>>;
-  watch<K extends keyof z.infer<SCHEMA>>(
-    name: K,
-    callback: WatchCallback<z.infer<SCHEMA>[K]>
-  ): () => void;
+  readAll(): Partial<S>;
+  watch<K extends keyof S>(name: K, callback: WatchCallback<S[K]>): () => void;
   destroy(): void;
 };
+```
+
+`S` is the **inferred output shape** of your Zod schema — equivalent to `z.infer<typeof schema>`. When you call `createStorage(schema)`, TypeScript resolves `S` automatically from the schema you pass. You can also use the type directly:
+
+```typescript
+import type { StorageInstance } from 'km-storage';
+import { z } from 'zod';
+
+const schema = z.object({ name: z.string(), age: z.number() });
+type MyStore = StorageInstance<z.infer<typeof schema>>;
+// → StorageInstance<{ name: string; age: number }>
 ```
 
 ---
