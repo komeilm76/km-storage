@@ -1,5 +1,16 @@
 import type { z } from 'zod';
 import { zodCast } from './zod-cast';
+
+/**
+ * Minimal structural shape of a Zod object schema.
+ * Used instead of `z.ZodObject<any>` in exported signatures so that TypeScript
+ * Language Server does not need to load Zod's type system to resolve km-storage types.
+ * Every `z.ZodObject` satisfies this interface via its `_zod.output` and `shape` fields.
+ */
+type $AnyZodObject = {
+  readonly _zod: { readonly output: Record<string, unknown> };
+  shape: Record<string, unknown>;
+};
 import { encodeEntry, decodeEntry } from './serialize';
 import type {
   StorageOptions,
@@ -45,11 +56,11 @@ import type {
  * store.update('darkMode', (prev) => !prev);
  * store.watch('token', (cur, prev) => console.log(cur, prev));
  */
-export function createStorage<SCHEMA extends z.ZodObject<any>, NAME extends string = string>(
+export function createStorage<SCHEMA extends $AnyZodObject, NAME extends string = string>(
   schema: SCHEMA,
   options?: StorageOptions<NAME>
-): StorageInstance<z.infer<SCHEMA>> {
-  type S = z.infer<SCHEMA>;
+): StorageInstance<SCHEMA['_zod']['output']> {
+  type S = SCHEMA['_zod']['output'];
 
   /**
    * The storage backend — either `'localStorage'` or `'sessionStorage'`.

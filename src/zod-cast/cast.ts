@@ -16,6 +16,14 @@
 
 import type { z } from 'zod';
 
+/**
+ * Minimal structural shape of any Zod schema.
+ * Used instead of `z.ZodTypeAny` in the exported signature so TypeScript Language
+ * Server does not need to load Zod's type system to resolve km-storage types.
+ * Every Zod v4 type satisfies this via its `_zod.output` field.
+ */
+type $AnyZodType = { readonly _zod: { readonly output: unknown } };
+
 // ─── Internal helpers ────────────────────────────────────────────────────────
 
 /**
@@ -170,8 +178,11 @@ function asJsonComplex(raw: unknown): unknown {
  * const sort = zodCast(z.enum(['asc', 'desc']), formData.get('sort'));
  * // 'asc' → 'asc'   |   'invalid' → undefined
  */
-export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infer<T> | undefined {
-  const type = schemaType(schema);
+export function zodCast<T extends $AnyZodType>(schema: T, raw: unknown): T['_zod']['output'] | undefined {
+  // Internal cast so the function body can use Zod-specific methods.
+  // This cast is in the function body and does NOT appear in the emitted .d.ts.
+  const _s = schema as unknown as z.ZodTypeAny;
+  const type = schemaType(_s);
 
   switch (type) {
     // ── Primitives ────────────────────────────────────────────────────────────
@@ -190,7 +201,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
     case 'ZodString': {
       if (raw === null || raw === undefined) return undefined;
       const str = typeof raw === 'string' ? raw : String(raw);
-      const r = schema.safeParse(str);
+      const r = _s.safeParse(str);
       return r.success ? r.data : undefined;
     }
 
@@ -209,7 +220,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
       if (raw === null || raw === undefined) return undefined;
       const num = typeof raw === 'number' ? raw : Number(raw);
       if (!isFinite(num)) return undefined;
-      const r = schema.safeParse(num);
+      const r = _s.safeParse(num);
       return r.success ? r.data : undefined;
     }
 
@@ -249,7 +260,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
       if (typeof raw === 'bigint') return raw as z.infer<T>;
       try {
         const big = BigInt(String(raw).trim());
-        const r = schema.safeParse(big);
+        const r = _s.safeParse(big);
         return r.success ? r.data : undefined;
       } catch {
         return undefined;
@@ -275,7 +286,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
       }
       const d = new Date(typeof raw === 'string' || typeof raw === 'number' ? raw : String(raw));
       if (isNaN(d.getTime())) return undefined;
-      const r = schema.safeParse(d);
+      const r = _s.safeParse(d);
       return r.success ? r.data : undefined;
     }
 
@@ -416,7 +427,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
       if (raw === null || raw === undefined) return undefined;
       const obj = typeof raw === 'string' ? tryParseJson(raw) : raw;
       if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) return undefined;
-      const r = schema.safeParse(obj);
+      const r = _s.safeParse(obj);
       return r.success ? r.data : undefined;
     }
 
@@ -435,7 +446,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
       if (raw === null || raw === undefined) return undefined;
       const arr = typeof raw === 'string' ? tryParseJson(raw) : raw;
       if (!Array.isArray(arr)) return undefined;
-      const r = schema.safeParse(arr);
+      const r = _s.safeParse(arr);
       return r.success ? r.data : undefined;
     }
 
@@ -450,7 +461,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
     case 'ZodTuple': {
       if (raw === null || raw === undefined) return undefined;
       const arr = typeof raw === 'string' ? tryParseJson(raw) : raw;
-      const r = schema.safeParse(arr);
+      const r = _s.safeParse(arr);
       return r.success ? r.data : undefined;
     }
 
@@ -465,7 +476,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
     case 'ZodRecord': {
       if (raw === null || raw === undefined) return undefined;
       const obj = typeof raw === 'string' ? tryParseJson(raw) : raw;
-      const r = schema.safeParse(obj);
+      const r = _s.safeParse(obj);
       return r.success ? r.data : undefined;
     }
 
@@ -486,7 +497,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
       if (!Array.isArray(arr)) return undefined;
       const itemSchema = (schema as any)._def.valueType as z.ZodTypeAny;
       const set = new Set(arr.map((item: unknown) => zodCast(itemSchema, item)));
-      const r = schema.safeParse(set);
+      const r = _s.safeParse(set);
       return r.success ? r.data : undefined;
     }
 
@@ -510,7 +521,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
       const map = new Map(
         pairs.map(([k, v]: [unknown, unknown]) => [zodCast(keySchema, k), zodCast(valSchema, v)])
       );
-      const r = schema.safeParse(map);
+      const r = _s.safeParse(map);
       return r.success ? r.data : undefined;
     }
 
@@ -548,7 +559,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
 
     /**
      * `z.intersection(…)` — coerces via `asJsonComplex` then delegates to
-     * `schema.safeParse`. Both sides of the intersection must be satisfied.
+     * `_s.safeParse`. Both sides of the intersection must be satisfied.
      *
      * @example
      * const schema = z.intersection(
@@ -561,7 +572,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
     case 'ZodIntersection': {
       if (raw === null || raw === undefined) return undefined;
       const val = asJsonComplex(raw);
-      const r = schema.safeParse(val);
+      const r = _s.safeParse(val);
       return r.success ? r.data : undefined;
     }
 
@@ -581,10 +592,10 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
     case 'ZodOptional': {
       if (raw === undefined) return undefined;
       if (raw === null) {
-        const r = schema.safeParse(raw);
+        const r = _s.safeParse(raw);
         return r.success ? (r.data as z.infer<T>) : undefined;
       }
-      const inner = innerType(schema);
+      const inner = innerType(_s);
       return inner ? (zodCast(inner, raw) as z.infer<T>) : undefined;
     }
 
@@ -602,7 +613,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
     case 'ZodNullable': {
       if (raw === null || raw === 'null') return null as z.infer<T>;
       if (raw === undefined) return undefined;
-      const inner = innerType(schema);
+      const inner = innerType(_s);
       return inner ? (zodCast(inner, raw) as z.infer<T>) : undefined;
     }
 
@@ -621,7 +632,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
      */
     case 'default':
     case 'ZodDefault': {
-      const inner = innerType(schema);
+      const inner = innerType(_s);
       if (!inner) return undefined;
       if (raw === null || raw === undefined) {
         const dv = (schema as any)._def.defaultValue;
@@ -646,7 +657,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
      */
     case 'catch':
     case 'ZodCatch': {
-      const inner = innerType(schema);
+      const inner = innerType(_s);
       if (!inner) return undefined;
       const result = zodCast(inner, raw);
       if (result === undefined) {
@@ -664,7 +675,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
      */
     case 'readonly':
     case 'ZodReadonly': {
-      const inner = innerType(schema);
+      const inner = innerType(_s);
       return inner ? (zodCast(inner, raw) as z.infer<T>) : undefined;
     }
 
@@ -673,12 +684,12 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
     // In Zod 4.x: `z.string().transform(…)`, `z.string().pipe(…)`, and
     // `z.string().brand()` all produce `_def.type === 'pipe'` (or keep the
     // source type for brands). We cast via the "in" schema to get an intermediate
-    // value, then run the full pipeline via `schema.safeParse`.
+    // value, then run the full pipeline via `_s.safeParse`.
 
     /**
      * `z.pipe(…)` / `z.transform(…)` / `z.refine(…)` (Zod 4 `ZodEffects`) —
      * coerces via the input schema first, then runs the full pipeline (including
-     * transforms and refinements) via `schema.safeParse`.
+     * transforms and refinements) via `_s.safeParse`.
      *
      * @example
      * // transform
@@ -699,7 +710,7 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
       if (!inSchema) return undefined;
       const intermediate = zodCast(inSchema, raw);
       if (intermediate === undefined) return undefined;
-      const r = schema.safeParse(intermediate);
+      const r = _s.safeParse(intermediate);
       return r.success ? r.data : undefined;
     }
 
@@ -751,11 +762,11 @@ export function zodCast<T extends z.ZodTypeAny>(schema: T, raw: unknown): z.infe
     /**
      * Fallback for any unrecognised schema types (e.g. future Zod additions).
      * Attempts JSON parsing when the raw value is a string, then delegates
-     * to `schema.safeParse`.
+     * to `_s.safeParse`.
      */
     default: {
       const val = asJsonComplex(raw);
-      const r = schema.safeParse(val);
+      const r = _s.safeParse(val);
       return r.success ? r.data : undefined;
     }
   }
